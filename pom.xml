@@ -9,14 +9,19 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>gr.uoa.di.madgik</groupId>
-	<artifactId>node-endpoint</artifactId>
+	<artifactId>eosc-node-endpoint</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>node-endpoint</name>
+	<name>eosc-node-endpoint</name>
 	<description>EOSC Node Endpoint</description>
 	<url/>
+
 	<licenses>
-		<license/>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
 	</licenses>
+
 	<developers>
 		<developer/>
 	</developers>
