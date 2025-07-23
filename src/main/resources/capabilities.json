@@ -1,0 +1,41 @@
+{
+  "node_endpoint": "https://node.sandbox.eosc-beyond.eu/api/endpoint",
+
+  "capabilities": [
+    {
+      "capability_type": "Resource Catalogue",
+      "endpoint": "https://providers.sandbox.eosc-beyond.eu/api",
+      "version": "5.0"
+    },
+    {
+      "capability_type": "Identity Management",
+      "endpoint": "-",
+      "version": "-"
+    },
+    {
+      "capability_type": "Application Workflow Management",
+      "endpoint": "-",
+      "version": "-"
+    },
+    {
+      "capability_type": "Service Monitoring",
+      "endpoint": "-",
+      "version": "-"
+    },
+    {
+      "capability_type": "Service Accounting",
+      "endpoint": "-",
+      "version": "-"
+    },
+    {
+      "capability_type": "Order Management",
+      "endpoint": "-",
+      "version": "-"
+    },
+    {
+      "capability_type": "Management System (including Helpdesk)",
+      "endpoint": "-",
+      "version": "-"
+    }
+  ]
+}
