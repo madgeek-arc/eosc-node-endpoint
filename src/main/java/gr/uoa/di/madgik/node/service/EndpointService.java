@@ -7,8 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 
 @Service
 public class EndpointService {
@@ -39,7 +38,20 @@ public class EndpointService {
     }
 
     private EndpointCapabilities writeFile(String filename, EndpointCapabilities capabilities) {
-        // TODO: open file (or create the file if not exists) and update its contents.
-        throw new UnsupportedOperationException("Not implemented yet");
+        File file = new File(filename);
+        try {
+            File parentDir = file.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+            try (OutputStream stream = new FileOutputStream(file)) {
+                objectMapper.writerWithDefaultPrettyPrinter().writeValue(stream, capabilities);
+            }
+            logger.info("Successfully wrote capabilities file to {}", filename);
+            return capabilities;
+        } catch (Exception e) {
+            logger.warn("Could not write capabilities file", e);
+            return new EndpointCapabilities();
+        }
     }
 }
