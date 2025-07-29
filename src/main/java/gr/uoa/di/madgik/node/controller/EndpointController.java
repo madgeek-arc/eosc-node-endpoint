@@ -16,12 +16,12 @@ public class EndpointController {
     }
 
     @GetMapping
-    public EndpointCapabilities getCapabilities() {
+    public EndpointCapabilities getEndpointCapabilities() {
         return service.get();
     }
 
     @PutMapping
-    public EndpointCapabilities updateCapabilities(@RequestBody EndpointCapabilities capabilities) {
+    public EndpointCapabilities updateEndpointCapabilities(@RequestBody EndpointCapabilities capabilities) {
         return service.update(capabilities);
     }
 }
