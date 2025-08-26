@@ -33,6 +33,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+        <spring-boot.build-image.imageName>docker.madgik.di.uoa.gr/${project.artifactId}:${project.version}</spring-boot.build-image.imageName>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -58,7 +59,7 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <image>
-                        <name>docker.madgik.di.uoa.gr/${project.artifactId}:${project.version}</name>
+                        <name>${spring-boot.build-image.imageName}</name>
                     </image>
                 </configuration>
 			</plugin>

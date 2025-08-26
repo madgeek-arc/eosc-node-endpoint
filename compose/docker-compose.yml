@@ -1,0 +1,19 @@
+services:
+  endpoint:
+    image: docker.madgik.di.uoa.gr/eosc-node-endpoint:0.0.1-SNAPSHOT
+    container_name: node-endpoint
+    ports:
+      - 127.0.0.1:8888:8888
+    environment:
+      SPRING_CONFIG_ADDITIONAL-LOCATION: /app/config/application.properties
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8888 && \
+           printf 'GET /api/endpoint HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && \
+           read -r line <&3 && echo \"$line\" | grep -q ' 200 '"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: always
+    volumes:
+      - ./config:/app/config
