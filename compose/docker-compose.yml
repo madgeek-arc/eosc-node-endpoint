@@ -1,9 +1,10 @@
 services:
   endpoint:
     image: docker.madgik.di.uoa.gr/eosc-node-endpoint:0.0.1-SNAPSHOT
+    user: "1002:1000"
     container_name: node-endpoint
     ports:
-      - 127.0.0.1:8888:8888
+      - "127.0.0.1:8888:8888"
     environment:
       SPRING_CONFIG_ADDITIONAL-LOCATION: /app/config/application.properties
     healthcheck:
