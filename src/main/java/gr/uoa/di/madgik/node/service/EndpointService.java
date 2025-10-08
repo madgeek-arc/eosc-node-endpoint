@@ -7,51 +7,46 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @Service
 public class EndpointService {
 
     private static final Logger logger = LoggerFactory.getLogger(EndpointService.class);
-    private final String capabilitiesPath;
+    private final Path capabilitiesPath;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private EndpointCapabilities capabilities;
+
     public EndpointService(@Value("${capabilities.filepath}") String capabilitiesPath) {
-        this.capabilitiesPath = capabilitiesPath;
+        this.capabilitiesPath = Path.of(capabilitiesPath);
     }
 
-    public EndpointCapabilities get() {
-        return readFile(capabilitiesPath);
-    }
-
-    public EndpointCapabilities update(EndpointCapabilities capabilities) {
-        return writeFile(capabilitiesPath, capabilities);
-    }
-
-    private EndpointCapabilities readFile(String filename) {
-        try(InputStream stream = new FileInputStream(filename)) {
-            return objectMapper.readValue(stream, EndpointCapabilities.class);
-        } catch (Exception e) {
-            logger.warn("Could not read capabilities file", e);
-            return new EndpointCapabilities();
+    public EndpointCapabilities get() throws IOException {
+        if (capabilities == null) {
+            capabilities = readFile();
         }
+        return capabilities;
     }
 
-    private EndpointCapabilities writeFile(String filename, EndpointCapabilities capabilities) {
-        File file = new File(filename);
-        try {
-            File parentDir = file.getParentFile();
-            if (parentDir != null && !parentDir.exists()) {
-                parentDir.mkdirs();
-            }
-            try (OutputStream stream = new FileOutputStream(file)) {
-                objectMapper.writerWithDefaultPrettyPrinter().writeValue(stream, capabilities);
-            }
-            logger.info("Successfully wrote capabilities file to {}", filename);
-            return capabilities;
-        } catch (Exception e) {
-            logger.warn("Could not write capabilities file", e);
-            return new EndpointCapabilities();
+    public EndpointCapabilities update(EndpointCapabilities capabilities) throws IOException {
+        this.capabilities = capabilities;
+        return writeFile(this.capabilities);
+    }
+
+    private EndpointCapabilities readFile() throws IOException {
+        return objectMapper.readValue(capabilitiesPath.toFile(), EndpointCapabilities.class);
+    }
+
+    private EndpointCapabilities writeFile(EndpointCapabilities capabilities) throws IOException {
+        Path parentDir = capabilitiesPath.getParent();
+        if (parentDir != null) {
+            Files.createDirectories(parentDir);
         }
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(capabilitiesPath.toFile(), capabilities);
+        logger.info("Successfully wrote capabilities file to {}", capabilitiesPath);
+        return capabilities;
     }
 }
