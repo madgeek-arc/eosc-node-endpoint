@@ -21,8 +21,6 @@ import gr.uoa.di.madgik.node.service.EndpointService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
 @RestController
 @RequestMapping(value = "endpoint", produces = MediaType.APPLICATION_JSON_VALUE)
 public class EndpointController {
@@ -34,12 +32,12 @@ public class EndpointController {
     }
 
     @GetMapping
-    public EndpointCapabilities getEndpointCapabilities() throws IOException {
+    public EndpointCapabilities getEndpointCapabilities() {
         return service.get();
     }
 
     @PutMapping
-    public EndpointCapabilities updateEndpointCapabilities(@RequestBody EndpointCapabilities capabilities) throws IOException {
+    public EndpointCapabilities updateEndpointCapabilities(@RequestBody EndpointCapabilities capabilities) {
         return service.update(capabilities);
     }
 }
