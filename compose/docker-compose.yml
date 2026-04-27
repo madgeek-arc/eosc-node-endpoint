@@ -1,6 +1,6 @@
 services:
   endpoint:
-    image: docker.madgik.di.uoa.gr/eosc-node-endpoint:0.0.1-SNAPSHOT
+    image: docker.madgik.di.uoa.gr/eosc-node-endpoint:1.0.0-SNAPSHOT
     user: "1002:1000"
     container_name: node-endpoint
     ports:
