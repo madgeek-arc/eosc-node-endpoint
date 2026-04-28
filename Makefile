@@ -3,7 +3,7 @@ TARGET=$(shell find target -name "*.jar")
 HOST_UID=$(shell id -u)
 HOST_GID=$(shell id -g)
 
-.PHONY: build run docker-build docker-push docker-compose
+.PHONY: build run docker-build docker-push docker-compose docker-compose-down
 
 build:
 	./mvnw clean package
@@ -19,6 +19,9 @@ docker-push:
 
 docker-compose:
 	IMAGE_NAME=$(IMAGE_NAME) HOST_UID=$(HOST_UID) HOST_GID=$(HOST_GID) docker compose -f compose/docker-compose.yml up
+
+docker-compose-down:
+	IMAGE_NAME=$(IMAGE_NAME) HOST_UID=$(HOST_UID) HOST_GID=$(HOST_GID) docker compose -f compose/docker-compose.yml down
 
 default: docker-build docker-push
 
