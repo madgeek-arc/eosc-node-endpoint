@@ -1,22 +1,24 @@
-IMAGE_NAME=$(shell mvn help:evaluate -Dexpression=spring-boot.build-image.imageName -q -DforceStdout)
+IMAGE_NAME=$(shell ./mvnw help:evaluate -Dexpression=spring-boot.build-image.imageName -q -DforceStdout)
 TARGET=$(shell find target -name "*.jar")
+HOST_UID=$(shell id -u)
+HOST_GID=$(shell id -g)
 
 .PHONY: build run docker-build docker-push docker-compose
 
 build:
-	mvn clean package
+	./mvnw clean package
 
 run:
 	@trap 'exit 0' INT; java -jar $(TARGET)
 
 docker-build:
-	mvn -Pnative spring-boot:build-image
+	./mvnw -Pnative spring-boot:build-image
 
 docker-push:
 	docker image push $(IMAGE_NAME)
 
 docker-compose:
-	docker compose -f compose/docker-compose.yml up
+	IMAGE_NAME=$(IMAGE_NAME) HOST_UID=$(HOST_UID) HOST_GID=$(HOST_GID) docker compose -f compose/docker-compose.yml up
 
 default: docker-build docker-push
 
