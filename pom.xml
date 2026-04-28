@@ -57,12 +57,19 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <image>
-                        <name>${spring-boot.build-image.imageName}</name>
-                    </image>
-                </configuration>
-			</plugin>
+	                <configuration>
+	                    <image>
+	                        <name>${spring-boot.build-image.imageName}</name>
+	                        <buildpacks>
+	                            <buildpack>urn:cnb:builder:paketo-buildpacks/java-native-image</buildpack>
+	                            <buildpack>docker://docker.io/paketobuildpacks/health-checker:latest</buildpack>
+	                        </buildpacks>
+	                        <env>
+	                            <BP_HEALTH_CHECKER_ENABLED>true</BP_HEALTH_CHECKER_ENABLED>
+	                        </env>
+	                    </image>
+	                </configuration>
+				</plugin>
 		</plugins>
 	</build>
 
