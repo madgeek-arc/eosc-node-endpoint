@@ -18,10 +18,25 @@ package gr.uoa.di.madgik.node.service;
 
 import gr.uoa.di.madgik.node.model.EndpointCapabilities;
 
+/**
+ * Provides access to the node endpoint capability document.
+ */
 public interface EndpointService {
 
-    public EndpointCapabilities get();
+    /**
+     * Returns the currently registered endpoint capabilities.
+     *
+     * @return the current capability document, or an empty document when no capabilities
+     * have been registered yet
+     */
+    EndpointCapabilities get();
 
-    public EndpointCapabilities update(EndpointCapabilities capabilities);
+    /**
+     * Replaces the current endpoint capabilities.
+     *
+     * @param capabilities capability document to store
+     * @return the stored capability document
+     */
+    EndpointCapabilities update(EndpointCapabilities capabilities);
 
 }
