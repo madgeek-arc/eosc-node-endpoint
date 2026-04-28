@@ -19,6 +19,7 @@ package gr.uoa.di.madgik.node.model;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CapabilityTest {
@@ -50,6 +51,15 @@ class CapabilityTest {
     }
 
     @Test
+    void setProtocolKeepsExplicitNull() {
+        Capability capability = new Capability();
+
+        capability.setProtocol((String) null);
+
+        assertNull(capability.getProtocol());
+    }
+
+    @Test
     void setStatusCanonicalizesKnownValue() {
         Capability capability = new Capability();
 
@@ -65,6 +75,15 @@ class CapabilityTest {
         capability.setStatus(" degraded ");
 
         assertEquals("DEGRADED", capability.getStatus());
+    }
+
+    @Test
+    void setStatusKeepsExplicitNull() {
+        Capability capability = new Capability();
+
+        capability.setStatus((String) null);
+
+        assertNull(capability.getStatus());
     }
 
     @Test

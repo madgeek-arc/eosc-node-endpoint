@@ -63,6 +63,29 @@ class FileBackedEndpointServiceTest {
     }
 
     @Test
+    void getPreservesNullProtocolAndStatusFromStoredJson() throws IOException {
+        Path file = tempDir.resolve("capabilities.json");
+        Files.writeString(file, """
+                {
+                  "capabilities": [
+                    {
+                      "capability_type": "test",
+                      "endpoint": "https://node.eosc-beyond.eu/api/test",
+                      "protocol": null,
+                      "status": null
+                    }
+                  ]
+                }
+                """);
+        EndpointService service = new FileBackedEndpointService(file.toString(), objectMapper);
+
+        Capability capability = service.get().getCapabilities().getFirst();
+
+        assertNull(capability.getProtocol());
+        assertNull(capability.getStatus());
+    }
+
+    @Test
     void updatePersistsCapabilitiesToDisk() throws IOException {
         Path file = tempDir.resolve("capabilities.json");
         EndpointService service = new FileBackedEndpointService(file.toString(), objectMapper);

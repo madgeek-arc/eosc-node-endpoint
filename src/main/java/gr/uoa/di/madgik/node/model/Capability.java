@@ -85,10 +85,15 @@ public class Capability {
     }
 
     public void setProtocol(String protocol) {
+        if (protocol == null) {
+            this.protocol = null;
+            return;
+        }
+
         Optional<Protocol> p = Protocol.fromValue(protocol);
         if (p.isPresent()) {
             this.protocol = p.get().value();
-        } else if (protocol != null) {
+        } else {
             this.protocol = protocol.trim().toUpperCase(Locale.ROOT);
         }
     }
@@ -102,10 +107,15 @@ public class Capability {
     }
 
     public void setStatus(String status) {
+        if (status == null) {
+            this.status = null;
+            return;
+        }
+
         Optional<Status> s = Status.fromValue(status);
         if (s.isPresent()) {
             this.status = s.get().value();
-        } else if (status != null) {
+        } else {
             this.status = status.trim().toUpperCase(Locale.ROOT);
         }
     }
