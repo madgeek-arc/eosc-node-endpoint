@@ -88,7 +88,7 @@ public class Capability {
         Optional<Protocol> p = Protocol.fromValue(protocol);
         if (p.isPresent()) {
             this.protocol = p.get().value();
-        } else {
+        } else if (protocol != null) {
             this.protocol = protocol.trim().toUpperCase(Locale.ROOT);
         }
     }
@@ -105,7 +105,7 @@ public class Capability {
         Optional<Status> s = Status.fromValue(status);
         if (s.isPresent()) {
             this.status = s.get().value();
-        } else {
+        } else if (status != null) {
             this.status = status.trim().toUpperCase(Locale.ROOT);
         }
     }
