@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-class EndpointServiceTest {
+class FileBackedEndpointServiceTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -44,7 +44,7 @@ class EndpointServiceTest {
 
     @Test
     void getReturnsEmptyCapabilitiesWhenFileDoesNotExist() {
-        EndpointService service = new EndpointService(tempDir.resolve("missing.json").toString(), objectMapper);
+        EndpointService service = new FileBackedEndpointService(tempDir.resolve("missing.json").toString(), objectMapper);
 
         EndpointCapabilities result = service.get();
 
@@ -57,7 +57,7 @@ class EndpointServiceTest {
     void getThrowsWhenStoredJsonIsInvalid() throws IOException {
         Path file = tempDir.resolve("capabilities.json");
         Files.writeString(file, "{ invalid json");
-        EndpointService service = new EndpointService(file.toString(), objectMapper);
+        EndpointService service = new FileBackedEndpointService(file.toString(), objectMapper);
 
         assertThrows(ReadCapabilitiesException.class, service::get);
     }
@@ -65,7 +65,7 @@ class EndpointServiceTest {
     @Test
     void updatePersistsCapabilitiesToDisk() throws IOException {
         Path file = tempDir.resolve("capabilities.json");
-        EndpointService service = new EndpointService(file.toString(), objectMapper);
+        EndpointService service = new FileBackedEndpointService(file.toString(), objectMapper);
 
         EndpointCapabilities payload = new EndpointCapabilities();
         payload.setNodeEndpoint(URI.create("https://node.eosc-beyond.eu"));
@@ -87,7 +87,7 @@ class EndpointServiceTest {
     void updateThrowsWhenTargetPathIsNotWritableFile() throws IOException {
         Path directory = tempDir.resolve("capabilities.json");
         Files.createDirectory(directory);
-        EndpointService service = new EndpointService(directory.toString(), objectMapper);
+        EndpointService service = new FileBackedEndpointService(directory.toString(), objectMapper);
 
         assertThrows(WriteCapabilitiesException.class, () -> service.update(new EndpointCapabilities()));
     }

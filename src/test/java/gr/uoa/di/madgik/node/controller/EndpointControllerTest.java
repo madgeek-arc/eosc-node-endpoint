@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import gr.uoa.di.madgik.node.model.Capability;
 import gr.uoa.di.madgik.node.model.EndpointCapabilities;
 import gr.uoa.di.madgik.node.service.EndpointService;
+import gr.uoa.di.madgik.node.service.FileBackedEndpointService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.http.MediaType;
@@ -45,7 +46,7 @@ class EndpointControllerTest {
 
     @Test
     void putThenGetReturnsPersistedCapabilities() throws Exception {
-        EndpointService service = new EndpointService(tempDir.resolve("capabilities.json").toString(), objectMapper);
+        EndpointService service = new FileBackedEndpointService(tempDir.resolve("capabilities.json").toString(), objectMapper);
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(new EndpointController(service))
                 .setControllerAdvice(new EndpointExceptionHandler())
                 .build();
