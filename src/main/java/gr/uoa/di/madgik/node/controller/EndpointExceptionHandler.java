@@ -18,6 +18,8 @@ package gr.uoa.di.madgik.node.controller;
 
 import gr.uoa.di.madgik.node.exception.ReadCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.WriteCapabilitiesException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,11 +28,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class EndpointExceptionHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(EndpointExceptionHandler.class);
+
     @ExceptionHandler(ReadCapabilitiesException.class)
     public ProblemDetail handleReadCapabilitiesException(ReadCapabilitiesException exception) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         problemDetail.setTitle("Capabilities read failed");
         problemDetail.setDetail(exception.getMessage());
+        logger.error(exception.getMessage(), exception);
         return problemDetail;
     }
 
@@ -39,6 +44,7 @@ public class EndpointExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
         problemDetail.setTitle("Capabilities write failed");
         problemDetail.setDetail(exception.getMessage());
+        logger.error(exception.getMessage(), exception);
         return problemDetail;
     }
 }
