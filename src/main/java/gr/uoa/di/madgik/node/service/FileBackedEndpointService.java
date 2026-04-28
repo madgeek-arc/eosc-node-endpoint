@@ -22,6 +22,7 @@ import gr.uoa.di.madgik.node.exception.WriteCapabilitiesException;
 import gr.uoa.di.madgik.node.model.EndpointCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,31 +32,58 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
 
 @Service
 public class FileBackedEndpointService implements EndpointService {
 
     private static final Logger logger = LoggerFactory.getLogger(FileBackedEndpointService.class);
     private final Path capabilitiesPath;
+    private final Duration cacheTtl;
+    private final Clock clock;
     private final ObjectMapper objectMapper;
 
-    private EndpointCapabilities capabilities; // TODO: rework this
+    private EndpointCapabilities cachedCapabilities;
+    private Instant cachedAt;
 
-    public FileBackedEndpointService(@Value("${capabilities.filepath}") String capabilitiesPath, ObjectMapper objectMapper) {
+    @Autowired
+    public FileBackedEndpointService(
+            @Value("${capabilities.filepath}") String capabilitiesPath,
+            @Value("${capabilities.cache.ttl:PT60S}") Duration cacheTtl,
+            ObjectMapper objectMapper) {
+        this(capabilitiesPath, cacheTtl, objectMapper, Clock.systemUTC());
+    }
+
+    public FileBackedEndpointService(String capabilitiesPath, ObjectMapper objectMapper) {
+        this(capabilitiesPath, Duration.ofSeconds(60), objectMapper, Clock.systemUTC());
+    }
+
+    FileBackedEndpointService(String capabilitiesPath, Duration cacheTtl, ObjectMapper objectMapper, Clock clock) {
         this.capabilitiesPath = Path.of(capabilitiesPath);
+        this.cacheTtl = cacheTtl;
         this.objectMapper = objectMapper;
+        this.clock = clock;
     }
 
-    public EndpointCapabilities get() {
-        if (capabilities == null) {
-            capabilities = readFile();
+    public synchronized EndpointCapabilities get() {
+        if (cachedCapabilities == null || cacheExpired()) {
+            cachedCapabilities = readFile();
+            cachedAt = clock.instant();
         }
-        return capabilities;
+        return cachedCapabilities;
     }
 
-    public EndpointCapabilities update(EndpointCapabilities capabilities) {
-        this.capabilities = capabilities;
-        return writeFile(capabilities);
+    public synchronized EndpointCapabilities update(EndpointCapabilities capabilities) {
+        EndpointCapabilities writtenCapabilities = writeFile(capabilities);
+        cachedCapabilities = writtenCapabilities;
+        cachedAt = clock.instant();
+        return writtenCapabilities;
+    }
+
+    private boolean cacheExpired() {
+        return cachedAt == null || !clock.instant().isBefore(cachedAt.plus(cacheTtl));
     }
 
     private EndpointCapabilities readFile() {

@@ -28,6 +28,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -86,6 +91,40 @@ class FileBackedEndpointServiceTest {
     }
 
     @Test
+    void getReturnsCachedCapabilitiesBeforeCacheTtlExpires() throws IOException {
+        Path file = tempDir.resolve("capabilities.json");
+        writeCapabilitiesFile(file, "https://node.eosc-beyond.eu/first");
+        MutableClock clock = new MutableClock(Instant.parse("2026-04-28T12:00:00Z"));
+        EndpointService service = new FileBackedEndpointService(file.toString(), Duration.ofMinutes(1), objectMapper, clock);
+
+        EndpointCapabilities first = service.get();
+        writeCapabilitiesFile(file, "https://node.eosc-beyond.eu/second");
+        clock.advance(Duration.ofSeconds(59));
+
+        EndpointCapabilities second = service.get();
+
+        assertEquals("https://node.eosc-beyond.eu/first", first.getNodeEndpoint().toString());
+        assertEquals("https://node.eosc-beyond.eu/first", second.getNodeEndpoint().toString());
+    }
+
+    @Test
+    void getReloadsCapabilitiesWhenCacheTtlExpires() throws IOException {
+        Path file = tempDir.resolve("capabilities.json");
+        writeCapabilitiesFile(file, "https://node.eosc-beyond.eu/first");
+        MutableClock clock = new MutableClock(Instant.parse("2026-04-28T12:00:00Z"));
+        EndpointService service = new FileBackedEndpointService(file.toString(), Duration.ofMinutes(1), objectMapper, clock);
+
+        EndpointCapabilities first = service.get();
+        writeCapabilitiesFile(file, "https://node.eosc-beyond.eu/second");
+        clock.advance(Duration.ofMinutes(1));
+
+        EndpointCapabilities second = service.get();
+
+        assertEquals("https://node.eosc-beyond.eu/first", first.getNodeEndpoint().toString());
+        assertEquals("https://node.eosc-beyond.eu/second", second.getNodeEndpoint().toString());
+    }
+
+    @Test
     void updatePersistsCapabilitiesToDisk() throws IOException {
         Path file = tempDir.resolve("capabilities.json");
         EndpointService service = new FileBackedEndpointService(file.toString(), objectMapper);
@@ -113,5 +152,41 @@ class FileBackedEndpointServiceTest {
         EndpointService service = new FileBackedEndpointService(directory.toString(), objectMapper);
 
         assertThrows(WriteCapabilitiesException.class, () -> service.update(new EndpointCapabilities()));
+    }
+
+    private void writeCapabilitiesFile(Path file, String nodeEndpoint) throws IOException {
+        Files.writeString(file, """
+                {
+                  "node_endpoint": "%s"
+                }
+                """.formatted(nodeEndpoint));
+    }
+
+    private static final class MutableClock extends Clock {
+
+        private Instant instant;
+
+        private MutableClock(Instant instant) {
+            this.instant = instant;
+        }
+
+        private void advance(Duration duration) {
+            instant = instant.plus(duration);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return instant;
+        }
     }
 }
