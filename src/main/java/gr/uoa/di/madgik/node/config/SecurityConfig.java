@@ -3,13 +3,13 @@ package gr.uoa.di.madgik.node.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,10 +25,16 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.client.RestClient;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Configuration
 public class SecurityConfig {
@@ -36,12 +42,12 @@ public class SecurityConfig {
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final ClientRegistrationRepository clientRegistrationRepository;
-    private final Set<String> admins;
+    private final SecurityProperties securityProperties;
 
     public SecurityConfig(ClientRegistrationRepository clientRegistrationRepository,
-                          @Value("${security.admin-emails:}") Set<String> admins) {
+                          SecurityProperties securityProperties) {
         this.clientRegistrationRepository = clientRegistrationRepository;
-        this.admins = admins;
+        this.securityProperties = securityProperties;
     }
 
     @Bean
@@ -56,10 +62,15 @@ public class SecurityConfig {
 
                 .exceptionHandling(exceptionHandling ->
                         exceptionHandling
-                                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                                .defaultAuthenticationEntryPointFor(
+                                        new LoginUrlAuthenticationEntryPoint("/oauth2/authorization/eosc"),
+                                        new MediaTypeRequestMatcher(MediaType.TEXT_HTML))
+                                .defaultAuthenticationEntryPointFor(
+                                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                        AnyRequestMatcher.INSTANCE))
 
                 .oauth2Login(oauth2login ->
-                        oauth2login.defaultSuccessUrl("/"))
+                        oauth2login.defaultSuccessUrl(securityProperties.getLoginRedirect()))
 
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
@@ -83,7 +94,7 @@ public class SecurityConfig {
         OidcClientInitiatedLogoutSuccessHandler oidcLogoutSuccessHandler =
                 new OidcClientInitiatedLogoutSuccessHandler(
                         this.clientRegistrationRepository);
-        oidcLogoutSuccessHandler.setPostLogoutRedirectUri("/");
+        oidcLogoutSuccessHandler.setPostLogoutRedirectUri(securityProperties.getLogoutRedirect());
 
         return oidcLogoutSuccessHandler;
     }
@@ -120,7 +131,7 @@ public class SecurityConfig {
                     }
                 }
 
-                if (admins.contains(email)) {
+                if (securityProperties.getAdminEmails().contains(email)) {
                     mappedAuthorities.add(new SimpleGrantedAuthority("ADMIN"));
                 }
             });
@@ -142,7 +153,7 @@ public class SecurityConfig {
             String email = fetchEmailFromUserInfo(jwt.getTokenValue());
 
             Collection<GrantedAuthority> authorities = new HashSet<>();
-            if (admins.contains(email)) {
+            if (securityProperties.getAdminEmails().contains(email)) {
                 authorities.add(new SimpleGrantedAuthority("ADMIN"));
             }
 
