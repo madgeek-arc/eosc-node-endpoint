@@ -1,6 +1,8 @@
 package gr.uoa.di.madgik.node.config;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +32,8 @@ import java.util.*;
 
 @Configuration
 public class SecurityConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final Set<String> admins;
@@ -149,6 +153,8 @@ public class SecurityConfig {
             String userInfoUri = clientRegistrationRepository.findByRegistrationId("eosc")
                     .getProviderDetails().getUserInfoEndpoint().getUri();
 
+            logger.debug("Fetching userInfo from '{}'", userInfoUri);
+
             Map<String, Object> body = restClient.get()
                     .uri(userInfoUri)
                     .headers(h -> h.setBearerAuth(accessToken))
@@ -158,6 +164,7 @@ public class SecurityConfig {
             if (body != null && body.containsKey("email")) {
                 return body.get("email").toString();
             }
+            logger.debug("No email claim found in userInfo response");
             return "";
         }
     }
