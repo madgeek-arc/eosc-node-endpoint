@@ -35,7 +35,7 @@ public class SecurityConfig {
     private final Set<String> admins;
 
     public SecurityConfig(ClientRegistrationRepository clientRegistrationRepository,
-                          @Value("${admins:}") Set<String> admins) {
+                          @Value("${security.admin-emails:}") Set<String> admins) {
         this.clientRegistrationRepository = clientRegistrationRepository;
         this.admins = admins;
     }

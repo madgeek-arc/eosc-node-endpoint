@@ -52,21 +52,47 @@ Common runtime properties:
 * `capabilities.filepath`: path to the JSON storage file.
 * `capabilities.cache.ttl`: cache TTL for loaded file contents. Default: `PT60S`.
 * `server.port`: HTTP port. Default: `8080`.
+* `security.admin-emails`: comma-separated list of email addresses granted admin access.
 
 ```bash
 java -jar eosc-node-endpoint-<version>.jar \
   --capabilities.filepath=/path/to/capabilities.json \
   --capabilities.cache.ttl=PT60S \
-  --server.port=9090
+  --server.port=9090 \
+  --security.admin-emails=user@example.com,other@example.com
 ```
 
 Manual edits to `capabilities.json` are picked up after the cache TTL expires.
 The TTL uses Spring Boot duration syntax, for example `PT60S`, `PT5M`, or `1m`.
 
+## Authentication
+
+The service uses EOSC AAI as its identity provider.
+
+| Method | Endpoint | Auth required |
+|--------|----------|---------------|
+| `GET` | `/api/endpoint` | No |
+| `PUT` | `/api/endpoint` | Yes — `ADMIN` role |
+
+### Bearer token (API access)
+
+Obtain an access token from the EOSC AAI token endpoint and pass it in the `Authorization` header:
+
+```bash
+curl -X PUT http://localhost:8888/api/endpoint \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '...'
+```
+
+The service validates the token against the EOSC AAI JWKS and fetches the user's email from the userInfo endpoint to determine admin status. An unauthenticated or unauthorized request receives `401 Unauthorized` or `403 Forbidden` respectively.
+
+The `ADMIN` authority is currently granted by matching the authenticated user's email against the `security.admin-emails` configuration property. This is a temporary mechanism — it will likely be replaced by a dedicated Keycloak role in a future version.
+
 ## API
 
-* `GET /api/endpoint` returns the currently stored capability document.
-* `PUT /api/endpoint` replaces the stored capability document and returns the saved payload.
+* `GET /api/endpoint` — returns the currently stored capability document.
+* `PUT /api/endpoint` — replaces the stored capability document and returns the saved payload. Requires `ADMIN` authority (see [Authentication](#authentication)).
 
 Request and response bodies use `snake_case` JSON:
 
@@ -94,6 +120,7 @@ Recommended statuses: `OPERATIONAL`, `MAINTENANCE`, `UNAVAILABLE`.
 
 ```bash
 curl -X PUT http://localhost:8888/api/endpoint \
+  -H "Authorization: Bearer <access_token>" \
   -H "Content-Type: application/json" \
   -d '{
     "node_endpoint": "https://node.eosc-beyond.eu",
