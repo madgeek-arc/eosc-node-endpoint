@@ -16,7 +16,7 @@
 
 package gr.uoa.di.madgik.node.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import gr.uoa.di.madgik.node.exception.ReadCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.WriteCapabilitiesException;
 import gr.uoa.di.madgik.node.model.Capability;

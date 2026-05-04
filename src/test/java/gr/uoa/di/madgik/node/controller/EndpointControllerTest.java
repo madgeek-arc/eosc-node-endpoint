@@ -16,7 +16,7 @@
 
 package gr.uoa.di.madgik.node.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import gr.uoa.di.madgik.node.model.Capability;
 import gr.uoa.di.madgik.node.model.EndpointCapabilities;
 import gr.uoa.di.madgik.node.service.EndpointService;

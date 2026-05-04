@@ -16,7 +16,8 @@
 
 package gr.uoa.di.madgik.node.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import gr.uoa.di.madgik.node.exception.ReadCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.WriteCapabilitiesException;
 import gr.uoa.di.madgik.node.model.EndpointCapabilities;
@@ -95,7 +96,7 @@ public class FileBackedEndpointService implements EndpointService {
 
         try {
             return objectMapper.readValue(capabilitiesPath.toFile(), EndpointCapabilities.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new ReadCapabilitiesException("Could not read capabilities file: " + capabilitiesPath, e);
         }
     }
