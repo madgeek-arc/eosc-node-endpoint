@@ -1,0 +1,27 @@
+server:
+  port: 8080
+  servlet.context-path: /api
+
+capabilities:
+  filepath: /tmp/capabilities.json
+  cache.ttl: PT60S
+
+### Security Properties ###
+security:
+  admin-emails:
+#### EOSC AAI Authentication ####
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          eosc:
+            issuer-uri:
+        registration:
+          eosc:
+            client-id:
+            client-name:
+            client-secret:
+            scope: email
+
+      resourceserver.jwt.issuer-uri:
