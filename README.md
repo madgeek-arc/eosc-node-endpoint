@@ -25,8 +25,11 @@ cd eosc-node-endpoint
 ## Run
 
 ```bash
-java -jar eosc-node-endpoint-<version>.jar --capabilities.filepath=/path/to/capabilities.json
+java -jar eosc-node-endpoint-<version>.jar \
+  --spring.config.additional-location=file:/path/to/application.yaml
 ```
+
+See [Configuration](#configuration) for the required properties and an example config file.
 
 ## Docker
 
@@ -49,32 +52,73 @@ make docker-compose-down
 
 Common runtime properties:
 
-* `capabilities.filepath`: path to the JSON storage file.
-* `capabilities.cache.ttl`: cache TTL for loaded file contents. Default: `PT60S`.
-* `server.port`: HTTP port. Default: `8080`.
-* `security.admin-emails`: comma-separated list of email addresses granted admin access.
+| Property | Description | Default |
+|----------|-------------|---------|
+| `capabilities.filepath` | Path to the JSON storage file | — |
+| `capabilities.cache.ttl` | Cache TTL for loaded file contents (Spring duration syntax) | `PT60S` |
+| `server.port` | HTTP port | `8080` |
+| `server.servlet.session.cookie.name` | Name of the HTTP session cookie used by the OAuth2 login flow | `NE_SESSION` |
+| `server.servlet.session.cookie.path` | Cookie path | `/` |
+| `security.admin-emails` | Comma-separated list of email addresses granted admin access | — |
+
+Because the OAuth2 properties contain secrets, supply them via an external config file rather than inline flags:
 
 ```bash
 java -jar eosc-node-endpoint-<version>.jar \
-  --capabilities.filepath=/path/to/capabilities.json \
-  --capabilities.cache.ttl=PT60S \
-  --server.port=9090 \
-  --security.admin-emails=user@example.com,other@example.com
+  --spring.config.additional-location=file:/path/to/application.yaml
 ```
+
+Use [`src/main/resources/application.yaml`](src/main/resources/application.yaml) as a starting point. A minimal deployment file looks like:
+
+```yaml
+capabilities:
+  filepath: /path/to/capabilities.json
+
+security:
+  admin-emails: user@example.com,other@example.com
+
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          eosc:
+            issuer-uri: https://core-proxy.node.eosc-beyond.eu/auth/realms/core
+        registration:
+          eosc:
+            client-id: my-client-id
+            client-secret: my-client-secret
+```
+
+`--spring.config.additional-location` merges the external file on top of the bundled defaults, so only the properties that differ need to be set.
 
 Manual edits to `capabilities.json` are picked up after the cache TTL expires.
 The TTL uses Spring Boot duration syntax, for example `PT60S`, `PT5M`, or `1m`.
 
+### OAuth2 / EOSC AAI properties
+
+Required when using the OAuth2 browser login flow:
+
+| Property | Description                                                                     |
+|----------|---------------------------------------------------------------------------------|
+| `spring.security.oauth2.client.provider.eosc.issuer-uri` | EOSC AAI issuer URI (used to discover OIDC endpoints)                           |
+| `spring.security.oauth2.client.registration.eosc.client-id` | OAuth2 client ID                                                                |
+| `spring.security.oauth2.client.registration.eosc.client-secret` | OAuth2 client secret                                                            |
+| `spring.security.oauth2.client.registration.eosc.client-name` | Display name for the login button (default: `EOSC`)                             |
+| `spring.security.oauth2.client.registration.eosc.scope` | Requested scopes (default: `openid`, `email`, `profile`, `entitlements`) |
+| `spring.security.oauth2.resourceserver.jwt.issuer-uri` | Issuer URI for JWT bearer token validation                                      |
+
 ## Authentication
 
-The service uses EOSC AAI as its identity provider.
+The service uses EOSC AAI as its identity provider and supports two authentication flows:
 
-| Method | Endpoint | Auth required |
-|--------|----------|---------------|
-| `GET` | `/api/endpoint` | No |
-| `PUT` | `/api/endpoint` | Yes — `ADMIN` role |
+### OAuth2 login (browser flow)
 
-### Bearer token (API access)
+Navigating to a protected endpoint redirects the browser to the EOSC AAI login page. After a successful login the service creates a server-side session identified by the `NE_SESSION` cookie (configurable via `server.servlet.session.cookie.name`).
+
+This flow requires the `spring.security.oauth2.client.*` properties to be set (see [OAuth2 / EOSC AAI properties](#oauth2--eosc-aai-properties)).
+
+### Bearer token (API / machine access)
 
 Obtain an access token from the EOSC AAI token endpoint and pass it in the `Authorization` header:
 
@@ -85,14 +129,18 @@ curl -X PUT http://localhost:8888/api/endpoint \
   -d '...'
 ```
 
-The service validates the token against the EOSC AAI JWKS and fetches the user's email from the userInfo endpoint to determine admin status. An unauthenticated or unauthorized request receives `401 Unauthorized` or `403 Forbidden` respectively.
+The service validates the token against the EOSC AAI JWKS using the issuer URI configured in `spring.security.oauth2.resourceserver.jwt.issuer-uri`. No session is created for this flow.
+
+An unauthenticated or unauthorized request receives `401 Unauthorized` or `403 Forbidden` respectively.
 
 The `ADMIN` authority is currently granted by matching the authenticated user's email against the `security.admin-emails` configuration property. This is a temporary mechanism — it will likely be replaced by a dedicated Keycloak role in a future version.
 
 ## API
 
-* `GET /api/endpoint` — returns the currently stored capability document.
-* `PUT /api/endpoint` — replaces the stored capability document and returns the saved payload. Requires `ADMIN` authority (see [Authentication](#authentication)).
+| Method | Endpoint | Auth required | Description |
+|--------|----------|---------------|-------------|
+| `GET` | `/api/endpoint` | No | Returns the currently stored capability document |
+| `PUT` | `/api/endpoint` | Yes — `ADMIN` role | Replaces the stored capability document and returns the saved payload |
 
 Request and response bodies use `snake_case` JSON:
 

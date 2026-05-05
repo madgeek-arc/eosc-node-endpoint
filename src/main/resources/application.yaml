@@ -3,6 +3,10 @@ server:
   forward-headers-strategy: framework
   servlet:
     context-path: /api
+    session:
+      cookie:
+        name: NE_SESSION
+        path: /
 
 capabilities:
   filepath: /tmp/capabilities.json
@@ -22,8 +26,8 @@ spring:
         registration:
           eosc:
             client-id:
-            client-name:
+            client-name: EOSC
             client-secret:
-            scope: email
+            scope: openid,email,profile,entitlements
 
-      resourceserver.jwt.issuer-uri:
+      resourceserver.jwt.issuer-uri: ${spring.security.oauth2.client.provider.eosc.issuer-uri}
