@@ -12,7 +12,7 @@ run:
 	@trap 'exit 0' INT; java -jar $(TARGET)
 
 docker-build:
-	./mvnw -Pnative spring-boot:build-image
+	./mvnw clean -Pnative spring-boot:build-image
 
 docker-push:
 	docker image push $(IMAGE_NAME)

@@ -1,26 +1,19 @@
 package gr.uoa.di.madgik.node.config;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.util.StringUtils;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Component
-@Validated
 @ConfigurationProperties(prefix = "security")
-public class SecurityProperties {
+public class SecurityProperties implements InitializingBean {
 
-    @NotEmpty
     private Set<String> adminEmails = new LinkedHashSet<>();
-    @NotNull
-    @NotEmpty
     private String loginRedirect = "/";
-    @NotNull
-    @NotEmpty
     private String logoutRedirect = "/";
 
     public Set<String> getAdminEmails() {
@@ -45,5 +38,18 @@ public class SecurityProperties {
 
     public void setLogoutRedirect(String logoutRedirect) {
         this.logoutRedirect = logoutRedirect;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        if (adminEmails == null || adminEmails.isEmpty()) {
+            throw new IllegalStateException("security.admin-emails must contain at least one email address");
+        }
+        if (!StringUtils.hasText(loginRedirect)) {
+            throw new IllegalStateException("security.login-redirect must not be empty");
+        }
+        if (!StringUtils.hasText(logoutRedirect)) {
+            throw new IllegalStateException("security.logout-redirect must not be empty");
+        }
     }
 }
