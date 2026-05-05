@@ -1,6 +1,6 @@
 services:
   endpoint:
-    image: ${IMAGE_NAME:-docker.madgik.di.uoa.gr/eosc-node-endpoint:latest}
+    image: ${IMAGE_NAME:-docker.madgik.di.uoa.gr/eosc-node-endpoint-service:latest}
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     container_name: node-endpoint
     ports:
