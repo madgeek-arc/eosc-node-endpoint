@@ -24,7 +24,7 @@ make docker-compose
 ```
 
 The Docker image repository is `docker.madgik.di.uoa.gr/eosc-node-endpoint-service`; the tag comes from the Maven project version.
-`make docker-build` builds a native image with the Paketo health-checker buildpack.
+`make docker-build` builds an image with the Paketo health-checker buildpack.
 
 The Compose setup in [../compose/docker-compose.yml](../compose/docker-compose.yml) exposes the service on `127.0.0.1:8888`, loads [../compose/config/application.properties](../compose/config/application.properties), and runs the container as the current host UID/GID.
 

@@ -19,10 +19,10 @@ The client depends on `eosc-node-capabilities-model`.
 Configure the client with the full endpoint resource URI:
 
 ```java
-EndpointCapabilitiesClient client = new HttpEndpointCapabilitiesClient(
+NodeCapabilitiesClient client = new HttpNodeCapabilitiesClient(
     URI.create("https://node.eosc-beyond.eu/api/endpoint"));
 
-EndpointCapabilities capabilities = client.get();
+NodeCapabilities capabilities = client.get();
 client.update(capabilities, accessToken);
 ```
 
@@ -38,7 +38,7 @@ Accept: application/json
 
 ## Errors
 
-The HTTP implementation raises `EndpointCapabilitiesClientException` when:
+The HTTP implementation raises `NodeClientException` when:
 
 - the request cannot be sent
 - the response status is not 2xx

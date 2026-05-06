@@ -18,7 +18,7 @@ The module contains:
 
 | Type | Purpose |
 |------|---------|
-| `EndpointCapabilities` | Full capability document for one node endpoint |
+| `NodeCapabilities` | Full capability document for one node endpoint |
 | `Capability` | One advertised endpoint capability |
 | `Protocol` | Recommended protocol values |
 | `Status` | Recommended operational status values |
