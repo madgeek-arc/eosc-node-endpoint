@@ -46,6 +46,8 @@ make docker-build
 make docker-compose
 ```
 
+Before running, populate `compose/config/.env` with the required secrets (see `compose/config/application.properties` for the expected variable names).
+
 See [`eosc-node-endpoint-service`](eosc-node-endpoint-service) for configuration, authentication, and API details.
 
 ## Published Artifacts
