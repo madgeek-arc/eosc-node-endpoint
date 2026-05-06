@@ -12,7 +12,7 @@ run:
 	@trap 'exit 0' INT; java -jar $(TARGET)
 
 docker-build:
-	./mvnw clean package -pl eosc-node-endpoint-service -am -Pnative spring-boot:build-image-no-fork
+	./mvnw clean package -pl eosc-node-endpoint-service -am spring-boot:build-image-no-fork
 
 docker-push:
 	docker image push $(IMAGE_NAME)
