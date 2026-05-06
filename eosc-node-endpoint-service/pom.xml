@@ -70,6 +70,7 @@
 					<image>
 						<name>${spring-boot.build-image.imageName}</name>
 						<buildpacks>
+							<buildpack>docker://docker.io/paketobuildpacks/java</buildpack>
 							<buildpack>docker://docker.io/paketobuildpacks/health-checker:latest</buildpack>
 						</buildpacks>
 						<env>
