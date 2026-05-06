@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>gr.uoa.di.madgik</groupId>
 	<artifactId>eosc-node-endpoint-parent</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>eosc-node-endpoint-parent</name>
 	<description>EOSC Node Endpoint</description>
