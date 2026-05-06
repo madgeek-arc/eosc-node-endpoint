@@ -4,6 +4,7 @@ Reusable Java model classes for EOSC Node endpoint capability documents.
 
 ## Maven
 
+<!-- x-release-please-start-version -->
 ```xml
 <dependency>
   <groupId>gr.uoa.di.madgik</groupId>
@@ -11,6 +12,7 @@ Reusable Java model classes for EOSC Node endpoint capability documents.
   <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
+<!-- x-release-please-end -->
 
 ## Contents
 
