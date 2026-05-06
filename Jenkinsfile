@@ -12,7 +12,6 @@ pipeline {
     REGISTRY = "docker.madgik.di.uoa.gr"
     REGISTRY_CRED = 'docker-registry'
     DOCKER_TAG = ''
-    DOCKER_BUILDKIT = '1'
   }
 
   stages {
