@@ -1,0 +1,42 @@
+/*
+ * Copyright 2026 OpenAIRE AMKE & Athena Research and Innovation Center
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package gr.uoa.di.madgik.node.service;
+
+import gr.uoa.di.madgik.node.capabilities.model.NodeCapabilities;
+
+/**
+ * Provides access to the node endpoint capability document.
+ */
+public interface EndpointService {
+
+    /**
+     * Returns the currently registered endpoint capabilities.
+     *
+     * @return the current capability document, or an empty document when no capabilities
+     * have been registered yet
+     */
+    NodeCapabilities get();
+
+    /**
+     * Replaces the current endpoint capabilities.
+     *
+     * @param capabilities capability document to store
+     * @return the stored capability document
+     */
+    NodeCapabilities update(NodeCapabilities capabilities);
+
+}

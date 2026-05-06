@@ -1,5 +1,5 @@
-IMAGE_NAME=$(shell ./mvnw help:evaluate -Dexpression=spring-boot.build-image.imageName -q -DforceStdout)
-TARGET=$(shell find target -name "*.jar")
+IMAGE_NAME=$(shell ./mvnw -pl eosc-node-endpoint-service help:evaluate -Dexpression=spring-boot.build-image.imageName -q -DforceStdout)
+TARGET=$(shell find eosc-node-endpoint-service/target -maxdepth 1 -name "eosc-node-endpoint-service-*.jar" ! -name "*.original" 2>/dev/null)
 HOST_UID=$(shell id -u)
 HOST_GID=$(shell id -g)
 
@@ -12,7 +12,7 @@ run:
 	@trap 'exit 0' INT; java -jar $(TARGET)
 
 docker-build:
-	./mvnw clean -Pnative spring-boot:build-image
+	./mvnw clean package -pl eosc-node-endpoint-service -am -Pnative spring-boot:build-image-no-fork
 
 docker-push:
 	docker image push $(IMAGE_NAME)
