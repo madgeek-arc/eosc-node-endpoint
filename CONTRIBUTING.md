@@ -1,4 +1,4 @@
-# Contributing to [Horizontal Adapters]
+# Contributing to [Node Endpoint]
 
 We welcome contributions from the community! Here's how you can help:
 
