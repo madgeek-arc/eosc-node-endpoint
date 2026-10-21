@@ -23,6 +23,7 @@ import java.net.URI;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Describes a single capability exposed by a node endpoint.
@@ -38,6 +39,7 @@ import java.util.Optional;
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class Capability {
 
+    private UUID id;
     private String capabilityType;
     private URI endpoint;
     private String version;
@@ -46,6 +48,14 @@ public class Capability {
     private String status = Status.OPERATIONAL.value();
 
     public Capability() {
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public String getCapabilityType() {

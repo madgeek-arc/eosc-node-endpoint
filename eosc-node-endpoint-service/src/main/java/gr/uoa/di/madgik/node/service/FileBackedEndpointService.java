@@ -20,6 +20,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import gr.uoa.di.madgik.node.exception.ReadCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.WriteCapabilitiesException;
+import gr.uoa.di.madgik.node.capabilities.model.Capability;
 import gr.uoa.di.madgik.node.capabilities.model.NodeCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ import java.nio.file.StandardCopyOption;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 public class FileBackedEndpointService implements EndpointService {
@@ -70,17 +72,35 @@ public class FileBackedEndpointService implements EndpointService {
 
     public synchronized NodeCapabilities get() {
         if (cachedCapabilities == null || cacheExpired()) {
-            cachedCapabilities = readFile();
+            NodeCapabilities read = readFile();
+            // Persist ids for capabilities stored before ids existed, so they stay stable across reads.
+            read = assignMissingIds(read) ? writeFile(read) : read;
+            cachedCapabilities = read;
             cachedAt = clock.instant();
         }
         return cachedCapabilities;
     }
 
     public synchronized NodeCapabilities update(NodeCapabilities capabilities) {
+        assignMissingIds(capabilities);
         NodeCapabilities writtenCapabilities = writeFile(capabilities);
         cachedCapabilities = writtenCapabilities;
         cachedAt = clock.instant();
         return writtenCapabilities;
+    }
+
+    private boolean assignMissingIds(NodeCapabilities capabilities) {
+        boolean changed = false;
+        if (capabilities.getCapabilities() == null) {
+            return false;
+        }
+        for (Capability capability : capabilities.getCapabilities()) {
+            if (capability != null && capability.getId() == null) {
+                capability.setId(UUID.randomUUID());
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     private boolean cacheExpired() {
