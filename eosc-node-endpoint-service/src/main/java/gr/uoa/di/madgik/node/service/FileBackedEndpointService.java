@@ -18,6 +18,7 @@ package gr.uoa.di.madgik.node.service;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
+import gr.uoa.di.madgik.node.exception.InvalidCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.ReadCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.WriteCapabilitiesException;
 import gr.uoa.di.madgik.node.capabilities.model.Capability;
@@ -26,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -37,6 +40,8 @@ import java.nio.file.StandardCopyOption;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -72,10 +77,7 @@ public class FileBackedEndpointService implements EndpointService {
 
     public synchronized NodeCapabilities get() {
         if (cachedCapabilities == null || cacheExpired()) {
-            NodeCapabilities read = readFile();
-            // Persist ids for capabilities stored before ids existed, so they stay stable across reads.
-            read = assignMissingIds(read) ? writeFile(read) : read;
-            cachedCapabilities = read;
+            cachedCapabilities = readFile();
             cachedAt = clock.instant();
         }
         return cachedCapabilities;
@@ -83,24 +85,65 @@ public class FileBackedEndpointService implements EndpointService {
 
     public synchronized NodeCapabilities update(NodeCapabilities capabilities) {
         assignMissingIds(capabilities);
+        validateUniqueIds(capabilities);
         NodeCapabilities writtenCapabilities = writeFile(capabilities);
         cachedCapabilities = writtenCapabilities;
         cachedAt = clock.instant();
         return writtenCapabilities;
     }
 
-    private boolean assignMissingIds(NodeCapabilities capabilities) {
-        boolean changed = false;
-        if (capabilities.getCapabilities() == null) {
-            return false;
+    /**
+     * Persists derived ids for stored capabilities that have none. Failures are logged and never abort
+     * startup; affected capabilities are served without ids until the next successful update.
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public synchronized void fillMissingIds() {
+        if (Files.notExists(capabilitiesPath)) {
+            return;
         }
+
+        try {
+            NodeCapabilities read = readFile();
+            int assigned = assignMissingIds(read);
+            if (assigned > 0) {
+                writeFile(read);
+                logger.info("Assigned ids to {} stored capabilities", assigned);
+            }
+            cachedCapabilities = read;
+            cachedAt = clock.instant();
+        } catch (ReadCapabilitiesException | WriteCapabilitiesException e) {
+            logger.warn("Could not assign missing capability ids in {}", capabilitiesPath, e);
+        }
+    }
+
+    private int assignMissingIds(NodeCapabilities capabilities) {
+        if (capabilities.getCapabilities() == null) {
+            return 0;
+        }
+
+        int assigned = 0;
         for (Capability capability : capabilities.getCapabilities()) {
             if (capability != null && capability.getId() == null) {
-                capability.setId(UUID.randomUUID());
-                changed = true;
+                capability.setId(Capability.deriveId(capability.getCapabilityType(), capability.getEndpoint()));
+                if (capability.getId() != null) {
+                    assigned++;
+                }
             }
         }
-        return changed;
+        return assigned;
+    }
+
+    private void validateUniqueIds(NodeCapabilities capabilities) {
+        if (capabilities.getCapabilities() == null) {
+            return;
+        }
+
+        Set<UUID> seen = new HashSet<>();
+        for (Capability capability : capabilities.getCapabilities()) {
+            if (capability != null && capability.getId() != null && !seen.add(capability.getId())) {
+                throw new InvalidCapabilitiesException("Duplicate capability id: " + capability.getId());
+            }
+        }
     }
 
     private boolean cacheExpired() {

@@ -61,6 +61,7 @@ spring.security.oauth2.client.registration.eosc.client-secret=my-client-secret
 Override `capabilities.filepath` for any deployment where the file must survive restarts.
 
 Manual edits to `capabilities.json` are picked up after the cache TTL expires.
+On startup, the service assigns derived ids to stored capabilities without an `id` and writes them back to the file. If the write fails, a warning is logged and those capabilities are served without ids. Capabilities added manually after startup get ids on the next restart or `PUT`.
 The TTL uses Spring Boot duration syntax, for example `PT60S`, `PT5M`, or `1m`.
 
 ### OAuth2 / EOSC AAI Properties
@@ -114,6 +115,8 @@ The `ADMIN` authority is currently granted by matching the authenticated user's 
 | `PUT` | `/api/endpoint` | Yes, `ADMIN` role | Replaces the stored capability document and returns the saved payload |
 
 Request and response bodies use the model documented in [../eosc-node-capabilities-model](../eosc-node-capabilities-model).
+
+On `PUT`, `id` is optional. Capabilities without an `id` get one derived from their `capability_type` and `endpoint`, so repeated updates keep the same ids. Provided ids are kept as-is. A document containing two capabilities with the same id, including two with the same `capability_type` and `endpoint`, is rejected with `400 Bad Request`.
 
 ### Example Update
 

@@ -74,9 +74,30 @@ class EndpointControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.node_endpoint").value("https://node.eosc-beyond.eu"))
+                .andExpect(jsonPath("$.capabilities[0].id").value(
+                        Capability.deriveId("test", URI.create("https://node.eosc-beyond.eu/api/test")).toString()))
                 .andExpect(jsonPath("$.capabilities[0].capability_type").value("test"))
                 .andExpect(jsonPath("$.capabilities[0].endpoint").value("https://node.eosc-beyond.eu/api/test"))
                 .andExpect(jsonPath("$.capabilities[0].protocol").value("REST"))
                 .andExpect(jsonPath("$.capabilities[0].status").value("MAINTENANCE"));
+    }
+
+    @Test
+    void putReturnsBadRequestForDuplicateCapabilities() throws Exception {
+        EndpointService service = new FileBackedEndpointService(tempDir.resolve("capabilities.json").toString(), objectMapper);
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(new EndpointController(service))
+                .setControllerAdvice(new EndpointExceptionHandler())
+                .build();
+
+        mockMvc.perform(put("/endpoint")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"capabilities":[
+                                  {"capability_type":"test","endpoint":"https://node.eosc-beyond.eu/api/test"},
+                                  {"capability_type":"test","endpoint":"https://node.eosc-beyond.eu/api/test"}
+                                ]}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Invalid capabilities"));
     }
 }

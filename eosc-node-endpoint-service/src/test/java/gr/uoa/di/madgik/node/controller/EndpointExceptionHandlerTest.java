@@ -16,6 +16,7 @@
 
 package gr.uoa.di.madgik.node.controller;
 
+import gr.uoa.di.madgik.node.exception.InvalidCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.ReadCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.WriteCapabilitiesException;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,20 @@ class EndpointExceptionHandlerTest {
                 .andExpect(jsonPath("$.detail").value("write failed"));
     }
 
+    @Test
+    void putReturnsBadRequestWhenCapabilitiesAreInvalid() throws Exception {
+        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(new ThrowingController())
+                .setControllerAdvice(new EndpointExceptionHandler())
+                .build();
+
+        mockMvc.perform(put("/test/invalid")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").value("Invalid capabilities"))
+                .andExpect(jsonPath("$.detail").value("invalid"));
+    }
+
     @RestController
     private static class ThrowingController {
 
@@ -73,6 +88,11 @@ class EndpointExceptionHandlerTest {
         @PutMapping("/test/write")
         public void write(@RequestBody String ignoredBody) {
             throw new WriteCapabilitiesException("write failed", new IOException());
+        }
+
+        @PutMapping("/test/invalid")
+        public void invalid(@RequestBody String ignoredBody) {
+            throw new InvalidCapabilitiesException("invalid");
         }
     }
 }

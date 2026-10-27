@@ -16,6 +16,7 @@
 
 package gr.uoa.di.madgik.node.controller;
 
+import gr.uoa.di.madgik.node.exception.InvalidCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.ReadCapabilitiesException;
 import gr.uoa.di.madgik.node.exception.WriteCapabilitiesException;
 import org.slf4j.Logger;
@@ -36,6 +37,15 @@ public class EndpointExceptionHandler {
         problemDetail.setTitle("Capabilities read failed");
         problemDetail.setDetail(exception.getMessage());
         logger.error(exception.getMessage(), exception);
+        return problemDetail;
+    }
+
+    @ExceptionHandler(InvalidCapabilitiesException.class)
+    public ProblemDetail handleInvalidCapabilitiesException(InvalidCapabilitiesException exception) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle("Invalid capabilities");
+        problemDetail.setDetail(exception.getMessage());
+        logger.warn(exception.getMessage());
         return problemDetail;
     }
 
