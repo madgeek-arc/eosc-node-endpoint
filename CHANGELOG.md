@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/madgeek-arc/eosc-node-endpoint/compare/v1.1.0...v1.2.0) (2026-10-29)
+
+
+### Features
+
+* add auto-generated UUID id to capabilities ([178338a](https://github.com/madgeek-arc/eosc-node-endpoint/commit/178338af43a63bc63a65ce16a2c9aaffa08adf92))
+* derive stable UUIDv5 ids for capabilities ([785d15a](https://github.com/madgeek-arc/eosc-node-endpoint/commit/785d15a2dfb229883e1d610e8c51ece8112be485))
+
 ## [1.1.0](https://github.com/madgeek-arc/eosc-node-endpoint/compare/v1.0.0...v1.1.0) (2026-05-28)
 
 

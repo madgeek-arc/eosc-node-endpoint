@@ -9,7 +9,7 @@ Small Java HTTP client for resolving EOSC Node Registry entries and enriching th
 <dependency>
   <groupId>gr.uoa.di.madgik</groupId>
   <artifactId>eosc-node-registry-client</artifactId>
-  <version>1.1.1-SNAPSHOT</version>
+  <version>1.2.0</version>
 </dependency>
 ```
 <!-- x-release-please-end -->
