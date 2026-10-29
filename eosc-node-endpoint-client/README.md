@@ -9,7 +9,7 @@ Small Java HTTP client for the EOSC Node endpoint capabilities API.
 <dependency>
   <groupId>gr.uoa.di.madgik</groupId>
   <artifactId>eosc-node-endpoint-client</artifactId>
-  <version>1.2.0</version>
+  <version>1.2.1-SNAPSHOT</version>
 </dependency>
 ```
 <!-- x-release-please-end -->
